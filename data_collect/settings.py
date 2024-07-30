@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # my apps
-    'apps.estacao',
+    'apps.station',
 ]
 
 MIDDLEWARE = [
@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'data_collect.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'desafio',
+        'NAME': 'data_collect',
         'USER': 'postgres',
         'PASSWORD': 'robert',
         'HOST': 'localhost',
