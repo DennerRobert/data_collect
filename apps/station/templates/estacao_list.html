@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Estações e Dados Históricos</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Estações e Dados Históricos</h1>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Nome da Estação</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Dados Históricos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for station in stations reversed %}
+                        <tr>
+                            <td>{{ station.name }}</td>
+                            <td>{{ station.latitude }}</td>
+                            <td>{{ station.longitude }}</td>
+                            <td>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Data/Hora</th>
+                                            <th>Bateria</th>
+                                            <th>Pluvio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for dado in station.historical_data.all %}
+                                            <tr>
+                                                <td>{{ dado.datetime }}</td>
+                                                <td>{{ dado.battery }}</td>
+                                                <td>{{ dado.station_data }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="3">Nenhum dado histórico disponível.</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">Nenhuma estação encontrada.</td>
+                        </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; primeira</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">anterior</a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">próxima</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">última &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</body>
+</html>
