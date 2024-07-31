@@ -12,3 +12,5 @@ venv.bak/
 
 static
 media
+
+__pycache__/
