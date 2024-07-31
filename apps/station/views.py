@@ -20,4 +20,4 @@ class StationListView(ListView):
 
     def get_queryset(self):
 
-        return Station.objects.prefetch_related('historical_data')
+        return Station.objects.prefetch_related('historical_data').order_by('county','name')
