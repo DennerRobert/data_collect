@@ -7,9 +7,8 @@ class Station(models.Model):
     longitude = models.CharField(max_length=255,null=True, blank=True)
     access_link = models.CharField(max_length=255)
     county = models.CharField(max_length=255,null=True, blank=True)
-
     def __str__(self):
-        return self.nome
+        return self.name
 
 class Historical_data(models.Model):
     station = models.ForeignKey(Station, related_name='historical_data', on_delete=models.CASCADE)

@@ -19,5 +19,5 @@ class StationListView(ListView):
     paginate_by = 5
 
     def get_queryset(self):
-
-        return Station.objects.prefetch_related('historical_data').order_by('county','name')
+        
+        return Station.objects.prefetch_related('historical_data')
