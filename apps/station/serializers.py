@@ -41,11 +41,10 @@ class StationCreateSerializer(serializers.ModelSerializer):
         historical_data = Historical_data.objects.filter(station=station)
         historical_data_serializer = HistoricalDataSerializer(historical_data, many=True)
         return Response({
-            'statio': serializer_station.data,
+            'station': serializer_station.data,
             'historical_data': historical_data_serializer.data
         })
     
-
 class HistoricalDataCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Historical_data
