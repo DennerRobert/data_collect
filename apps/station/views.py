@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework.permissions import IsAuthenticated
 
 class ScrapeDataView(View):
     def get(self, request, *args, **kwargs):
@@ -30,7 +30,7 @@ class StationListView(ListView):
 
 class StationViewset(viewsets.ModelViewSet):
     queryset = Station.objects.all()
-    
+    permission_classes = [IsAuthenticated]
     def get_serializer_class(self, *args, **kwargs):
         if self.action == 'create':
             
@@ -42,6 +42,7 @@ class StationViewset(viewsets.ModelViewSet):
 class HistoricalDataViewSet(viewsets.ModelViewSet):
     queryset = Historical_data.objects.all()
     serializer_class = HistoricalDataSerializer
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         station_id = self.kwargs.get('station_pk')
@@ -52,6 +53,7 @@ class HistoricalDataViewSet(viewsets.ModelViewSet):
 
 
 class StationHistoricalDataViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
     def create(self, request, station_pk=None):
         station = Station.objects.get(id=station_pk)
         serializer = HistoricalDataSerializer(data=request.data, many=True)
@@ -70,6 +72,7 @@ class StationHistoricalDataViewSet(viewsets.ViewSet):
     
 
 class AddHistoricalDataView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request, station_pk):
         station = Station.objects.get(id=station_pk)
         serializer = HistoricalDataCreateSerializer(data=request.data, many=True)
