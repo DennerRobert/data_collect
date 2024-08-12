@@ -1,9 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
-from .models import Station
-from .models import Historical_data
+from .models import Station, Historical_data
 from django.utils.dateparse import parse_datetime
-
+from .serializers import HistoricalDataCreateSerializer, StationCreateSerializer
+from rest_framework.response import Response
+from rest_framework import status
 
 def scrape_station_data():
     url = 'http://sinda.crn.inpe.br/PCD/SITE/novo/site/cidades.php?uf=RN'
@@ -98,3 +99,35 @@ def save_station_data(stations):
         Historical_data.objects.bulk_create(historical_data)
     else:
         print('No historical data to save.')
+
+
+def create_historical_data_for_station(station, data):
+    """Cria dados históricos para uma estação com base nos dados fornecidos."""
+    for item in data:
+        Historical_data.objects.create(station=station, **item)
+
+
+def handle_create_historical_data(request, station_pk):
+    """Manipula a criação de dados históricos para uma estação específica."""
+    station = Station.objects.get(id=station_pk)
+    serializer = HistoricalDataCreateSerializer(data=request.data, many=True)
+    
+    if serializer.is_valid():
+        create_historical_data_for_station(station, serializer.validated_data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def handle_station_update(request, pk, partial):
+    """Lida com a atualização de uma estação, seja com `PUT` ou `PATCH`."""
+    try:
+        station = Station.objects.get(pk=pk)
+    except Station.DoesNotExist:
+        return Response({'error': 'Station not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = StationCreateSerializer(station, data=request.data, partial=partial)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -10,6 +10,7 @@ class Station(models.Model):
     def __str__(self):
         return self.name
 
+
 class Historical_data(models.Model):
     station = models.ForeignKey(Station, related_name='historical_data', on_delete=models.CASCADE)
     datetime = models.CharField(max_length=255,null=True, blank=True)
