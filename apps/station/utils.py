@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 from .models import Station
-from datetime import datetime
 from .models import Historical_data
 from django.utils.dateparse import parse_datetime
 

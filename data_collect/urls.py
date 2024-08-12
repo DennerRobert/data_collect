@@ -2,9 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from apps.station.views import HistoricalDataViewSet, ScrapeDataView , StationListView, StationHistoricalDataViewSet, AddHistoricalDataView, StationViewset
-from rest_framework.routers import DefaultRouter
-
+from apps.station.views import ScrapeDataView , StationListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),

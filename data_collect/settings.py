@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'data_collect.wsgi.application'
 DATABASES = {
 	'default': decouple.config('DATABASE_URL',
 		# para pro pode remover a linha abaixo, DATABASE_URL - vem do .env
-		default="postgres://postgres:robert@db:5432/data_collect",
+		default="postgres://postgres:robert@localhost:5432/data_collect",
 		cast=dj_database_url.parse)
 }
 
@@ -98,7 +98,7 @@ REST_FRAMEWORK = {
 }
 SIMPLE_JWT = {
     
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=20),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),

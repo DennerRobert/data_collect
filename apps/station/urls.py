@@ -1,7 +1,9 @@
 from django.urls import path, include
 
-from .views import AddHistoricalDataView, HistoricalDataViewSet, ScrapeDataView, StationListView, StationUpdateView, StationViewset
+from .views import ScrapeDataView, StationListView
 from rest_framework.routers import DefaultRouter
+from .api import AddHistoricalDataView, HistoricalDataViewSet, StationUpdateView, StationViewset
+
 
 router = DefaultRouter()
 router.register(r'stations', StationViewset, basename='stations')
