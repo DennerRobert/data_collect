@@ -23,9 +23,28 @@ class StationCreateSerializer(serializers.ModelSerializer):
         fields = ['id', 'external_id', 'name', 'latitude', 'longitude', 'historical_data']
 
     def create(self, validated_data):
+        """
+        Creates a new station instance and its associated historical data.
+
+        Args:
+            validated_data (dict): A dictionary containing the validated data for the station and its historical data.
+
+        Returns:
+            Station: The newly created station instance.
+        """
         return create_station_with_historical_data(validated_data)
     
     def update(self, instance, validated_data):
+        """
+        Updates an existing station instance and its associated historical data.
+
+        Args:
+            instance (Station): The station instance to be updated.
+            validated_data (dict): A dictionary containing the validated data for the station and its historical data.
+
+        Returns:
+            Station: The updated station instance.
+        """
         return update_station_with_historical_data(instance, validated_data)
 
     

@@ -7,6 +7,16 @@ from rest_framework.response import Response
 from rest_framework import status
 
 def scrape_station_data():
+    """
+    Scrapes station data from a given website.
+
+    This function sends a GET request to the specified URL, parses the HTML response,
+    and extracts relevant information about weather stations. It returns a list of
+    dictionaries, each containing the external ID, name, access link, and county of a station.
+
+    Returns:
+        list: A list of dictionaries containing station data.
+    """
     url = 'http://sinda.crn.inpe.br/PCD/SITE/novo/site/cidades.php?uf=RN'
     response = requests.get(url)
     response.encoding = 'utf-8'
@@ -35,6 +45,13 @@ def scrape_station_data():
 
 
 def save_station_data(stations):
+    """
+    Saves station data by scraping the provided website, updating or creating station objects,
+    and saving their historical data.
+
+    Args:
+        stations (list): A list of station data dictionaries.
+    """
     stations = scrape_station_data()
 
     station_updates = []
@@ -102,13 +119,28 @@ def save_station_data(stations):
 
 
 def create_historical_data_for_station(station, data):
-    """Cria dados históricos para uma estação com base nos dados fornecidos."""
+    """
+    Creates historical data for a given station based on the provided data.
+
+    Args:
+        station: The station for which historical data is being created.
+        data: A list of dictionaries containing historical data to be created.
+    """
     for item in data:
         Historical_data.objects.create(station=station, **item)
 
 
 def handle_create_historical_data(request, station_pk):
-    """Manipula a criação de dados históricos para uma estação específica."""
+    """
+    Handles the creation of historical data for a specific station.
+
+    Args:
+        request: The incoming request containing historical data to be created.
+        station_pk: The primary key of the station for which historical data is being created.
+
+    Returns:
+        Response: A successful response with the created historical data if the request is valid, otherwise a response with error details.
+    """
     station = Station.objects.get(id=station_pk)
     serializer = HistoricalDataCreateSerializer(data=request.data, many=True)
     
@@ -120,7 +152,18 @@ def handle_create_historical_data(request, station_pk):
 
 
 def handle_station_update(request, pk, partial):
-    """Lida com a atualização de uma estação, seja com `PUT` ou `PATCH`."""
+    """
+    Handles the update of a station, either with a `PUT` or `PATCH` request.
+
+    Args:
+        request: The incoming request containing the updated station data.
+        pk: The primary key of the station to be updated.
+        partial: A boolean indicating whether the update is partial or not.
+
+    Returns:
+        Response: A successful response with the updated station data if the request is valid,
+                  otherwise a response with error details.
+    """
     try:
         station = Station.objects.get(pk=pk)
     except Station.DoesNotExist:
