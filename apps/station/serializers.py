@@ -6,7 +6,7 @@ from .models import Station, Historical_data
 class HistoricalDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Historical_data
-        fields = ['id', 'datetime', 'battery', 'station_data', 'station']
+        fields = ['datetime', 'battery', 'station_data', 'station']
 
 class StationSerializer(serializers.ModelSerializer):
     historical_data = HistoricalDataSerializer(many=True, read_only=True)
@@ -52,3 +52,9 @@ class HistoricalDataCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Historical_data
         fields = ['datetime', 'battery', 'station_data']
+
+
+class StationAnalysisSerializer(serializers.Serializer):
+    station_id = serializers.IntegerField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()

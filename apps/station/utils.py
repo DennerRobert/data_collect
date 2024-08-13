@@ -5,6 +5,12 @@ from django.utils.dateparse import parse_datetime
 from .serializers import HistoricalDataCreateSerializer, StationCreateSerializer
 from rest_framework.response import Response
 from rest_framework import status
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential
+from keras.layers import LSTM, Dense
+
 
 def scrape_station_data():
     """
@@ -174,3 +180,77 @@ def handle_station_update(request, pk, partial):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def analyze_station_data(data, prediction_steps=4):
+    """
+    Analyzes the given station data and makes predictions using a LSTM model.
+
+    Args:
+        data (pandas.DataFrame): The station data to be analyzed, containing columns 'datetime' and 'battery'.
+        prediction_steps (int, optional): The number of steps to predict ahead. Defaults to 4.
+
+    Returns:
+        dict: A dictionary containing the predictions made by the LSTM model. The key 'station_data_predictions'
+              maps to a list of floats representing the predicted battery levels.
+
+    Description:
+        This function takes in a pandas DataFrame containing station data with columns 'datetime' and 'battery'.
+        It converts the 'datetime' column to an index, ensures that the 'battery' column is numeric, and drops any
+        rows with missing values. It then normalizes the data using the MinMaxScaler.
+
+        The function prepares the data for the LSTM model by creating input and output sequences. It reshapes the
+        input data to have the shape (num_sequences, sequence_length, 1) and reshapes the output data to have the
+        shape (num_sequences, 1).
+
+        The function defines and trains an LSTM model with two LSTM layers and a Dense layer. It compiles the model with
+        the Adam optimizer and mean squared error loss. It fits the model to the input and output data using 20 epochs
+        and a batch size of 32.
+
+        The function then makes predictions by iteratively feeding the last sequence of the scaled data into the model
+        and appending the predicted values to the 'predictions' list. It descales the predictions before returning
+        them as a dictionary with the key 'station_data_predictions'.
+    """
+    data['datetime'] = pd.to_datetime(data['datetime'])
+    data.set_index('datetime', inplace=True)
+
+    data['battery'] = pd.to_numeric(data['battery'], errors='coerce')
+    data = data.dropna()
+
+    # Normalizar os dados entre 0 e 1
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(data[['battery']])
+
+    # Preparar dados para LSTM
+    X, y = [], []
+    for i in range(len(scaled_data) - prediction_steps):
+        X.append(scaled_data[i:i+prediction_steps, 0])
+        y.append(scaled_data[i+prediction_steps, 0])
+    X, y = np.array(X), np.array(y)
+    X = np.reshape(X, (X.shape[0], X.shape[1], 1))
+
+    # Definir e treinar o modelo LSTM
+    model = Sequential()
+    model.add(LSTM(units=50, return_sequences=True, input_shape=(X.shape[1], 1)))
+    model.add(LSTM(units=50))
+    model.add(Dense(1))
+
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    model.fit(X, y, epochs=20, batch_size=32)
+
+    # Fazer previsões
+    predictions = []
+    last_sequence = scaled_data[-prediction_steps:]
+    current_input = last_sequence
+
+    for i in range(prediction_steps):
+        prediction = model.predict(np.reshape(current_input, (1, current_input.shape[0], 1)))
+        predictions.append(prediction[0, 0])
+        current_input = np.append(current_input[1:], prediction, axis=0)
+
+    # Desnormalizar previsões
+    predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
+    
+    return {
+        'station_data_predictions': predictions.flatten().tolist()
+    }

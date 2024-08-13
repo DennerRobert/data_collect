@@ -2,8 +2,11 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from apps.station.models import Historical_data, Station
-from apps.station.serializers import HistoricalDataSerializer, StationCreateSerializer, StationSerializer
-from .utils import handle_create_historical_data, handle_station_update
+from apps.station.serializers import HistoricalDataSerializer, StationAnalysisSerializer, StationCreateSerializer, StationSerializer
+from .utils import analyze_station_data, handle_create_historical_data, handle_station_update
+import pandas as pd
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class StationViewSet(viewsets.ModelViewSet):
@@ -87,3 +90,41 @@ class AddHistoricalDataView(APIView):
             Response: A successful response with the created historical data if the request is valid, otherwise a response with error details.
         """
         return handle_create_historical_data(request, station_pk)
+    
+
+class StationAnalysisView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles a POST request to analyze historical data for a specific station.
+
+        Args:
+            request: The incoming request containing station ID, start date, and end date.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            Response: A successful response with the analyzed data if the request is valid, 
+                      otherwise a response with error details or a 404 error if no historical data is available.
+        """
+        serializer = StationAnalysisSerializer(data=request.data)
+        if serializer.is_valid():
+            station_id = serializer.validated_data['station_id']
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
+            
+            historical_data = Historical_data.objects.filter(
+                station_id=station_id,
+                datetime__range=[start_date, end_date]
+            )
+            data = pd.DataFrame(list(historical_data.values('datetime', 'battery')))
+            
+            if data.empty:
+                return Response({'error': 'No historical data available for the selected period.'}, status=status.HTTP_404_NOT_FOUND)
+            
+            result = analyze_station_data(data)
+            
+            return Response(result, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
